@@ -8,11 +8,14 @@ def main():
         print("==============MENU================")
         print("0 - zakończ program")
         print ("1 - pokaż co u znajomych")
+        print ("2- dodaj nowego znajomego")
+        print ("3 - usuń znajomego")
         print("==================================")
         choice = input("wybierz opcje menu: ")
         if choice == "0": break
-        if choice == "1":get_user_info(users)
-
+        if choice == "1": get_user_info(users)
+        if choice == "2": add_user(users)
+        if cheice == "3": remove_user(users)
 
 if __name__ == '__main__':
     main()
