@@ -3,6 +3,26 @@ import tkintermapview
 
 
 users: list = []
+class User:
+    def __init__(self, name, surname, location, posts):
+        self.name=name
+        self.surname=surname
+        self.location=location
+        self.posts=posts
+        self.coordinates = self.get_coordinates()
+        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1])
+
+    def get_coordinates(self)->list:
+        import requests
+        from bs4 import BeautifulSoup
+        url=f"https://pl.wikipedia.org/wiki/{self.location}"
+        response=requests.get(url).text
+        response_html=BeautifulSoup(response,"html.parser")
+        latitude=float(response_html.select(".latitude")[1].text.replace(",","."))
+        longitude=float(response_html.select(".longitude")[1].text.replace(",","."))
+        print(latitude)
+        print(longitude)
+        return [latitude,longitude]
 
 
 def add_user():
@@ -11,7 +31,7 @@ def add_user():
     zmienna_miejscowosc=entry_location.get()
     zmienna_posty=entry_posts.get()
 
-    users.append({"name":zmienna_imie, "surname":zmienna_nazwisko, "location":zmienna_miejscowosc, "post":zmienna_posty})
+    users.append(User(name = zmienna_imie, surname = zmienna_nazwisko, location= zmienna_miejscowosc, posts = zmienna_posty))
     print(users)
     entry_name.delete(0, END)
     entry_surname.delete(0, END)
@@ -23,30 +43,34 @@ def add_user():
 def show_users():
     listbox_lista_obiektow.delete(0, END)
     for idx, user in enumerate(users):
-        listbox_lista_obiektow.insert(idx,f"{idx+1}. {user["name"]} {user["surname"]}")
+        listbox_lista_obiektow.insert(idx,f"{idx+1}. {user.name} {user.surname}")
+
 
 def remove_user():
     i=listbox_lista_obiektow.index(ACTIVE)
+    users[i].marker.delete()
     users.pop(i)
     show_users()
 
 def show_user_details():
     i=listbox_lista_obiektow.index(ACTIVE)
-    user_name=users[i]["name"]
-    user_surname=users[i]["surname"]
-    user_location=users[i]["location"]
-    user_posts=users[i]["post"]
+    user_name=users[i].name
+    user_surname=users[i].surname
+    user_location=users[i].location
+    user_posts=users[i].post
     label_name_szczegoly_obiektow_wartosc.config(text=user_name)
     label_surname_szczegoly_obiektow_wartosc.config(text=user_surname)
     label_location_szczegoly_obiektow_wartosc.config(text=user_location)
     label_posts_szczegoly_obiektow_wartosc.config(text=user_posts)
+    map_widget.set_position(users[i].coordinates[0],users[i].coordinates[1])
+    map_widget.set_zoom(14)
 
 def edit_user():
     i=listbox_lista_obiektow.index(ACTIVE)
-    user_name = users[i]["name"]
-    user_surname = users[i]["surname"]
-    user_location = users[i]["location"]
-    user_posts = users[i]["post"]
+    user_name = users[i].name
+    user_surname = users[i].surname
+    user_location = users[i].location
+    user_posts = users[i].post
     entry_name.insert(0, user_name)
     entry_surname.insert(0, user_surname)
     entry_location.insert(0, user_location)
@@ -59,10 +83,14 @@ def update_users(i):
     zmienna_nazwisko = entry_surname.get()
     zmienna_miejscowosc = entry_location.get()
     zmienna_posty = entry_posts.get()
-    users[i]["name"] = zmienna_imie
-    users[i]["surname"] = zmienna_nazwisko
-    users[i]["location"] = zmienna_miejscowosc
-    users[i]["post"] = zmienna_posty
+    users[i].name = zmienna_imie
+    users[i].surname = zmienna_nazwisko
+    users[i].location = zmienna_miejscowosc
+    users[i].post = zmienna_posty
+    users[i].marker.delete()
+    users[i].coordinates = users[i].get_coordinates()
+    users[i].marker = map_widget.set_marker(users[i].coordinates[0],users[i].coordinates[1])
+    print(users[i].coordinates)
     show_users()
 
     button_dodaj_obiekt.config(text="Dodaj użytkownika", command=add_user)
